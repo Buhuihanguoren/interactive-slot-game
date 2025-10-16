@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Slot Machine - Payline System</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.2/pixi.min.js"></script>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: linear-gradient(135deg,#1e3c72 0%,#2a5298 100%);
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        #game-container { 
+            position: relative; 
+            width: 100%; 
+            max-width: 1200px; 
+            height: 100vh; 
+            max-height: 900px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+        }
+        #game-root { 
+            position: relative; 
+            width: 100%; 
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        canvas { 
+            display: block; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+        }
+        #small-overlay { 
+            position: fixed; 
+            inset: 0; 
+            background: rgba(0,0,0,0.85); 
+            display: none; 
+            justify-content: center; 
+            align-items: center; 
+            color: white; 
+            font-size: 24px; 
+            z-index: 9999; 
+            flex-direction: column; 
+            gap: 20px; 
+        }
+        #small-overlay h2 { 
+            font-size: 32px; 
+            color: #ffd700; 
+            text-shadow: 0 0 10px rgba(255,215,0,0.5); 
+        }
+        #bottom-controls { 
+            position: absolute; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            gap: 15px; 
+            bottom: 60px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            z-index: 10; 
+            width: 95%; 
+            max-width: 1100px; 
+        }
+        #info-bar { 
+            display: flex; 
+            gap: 15px; 
+            align-items: center; 
+            padding: 0 20px; 
+            height: 64px; 
+            border-radius: 14px; 
+            background: rgba(0,0,0,0.65); 
+            color: #fff; 
+            font-weight: bold; 
+            font-size: 16px; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); 
+            border: 1px solid rgba(255,255,255,0.1); 
+        }
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+        .info-label {
+            font-size: 11px;
+            color: rgba(255,255,255,0.7);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .highlight { 
+            color: #4ade80; 
+            font-size: 18px;
+            text-shadow: 0 0 5px rgba(74,222,128,0.5); 
+        }
+        #spin-btn { 
+            height: 64px; 
+            padding: 0 40px; 
+            border-radius: 14px; 
+            background: linear-gradient(#4ade80, #22c55e); 
+            color: white; 
+            font-size: 28px; 
+            font-weight: 800; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer; 
+            user-select: none; 
+            box-shadow: 0 8px 0 rgba(0,0,0,0.4); 
+            transition: all 0.1s; 
+            min-width: 160px; 
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3); 
+            border: 1px solid rgba(255,255,255,0.2); 
+        }
+        #spin-btn:active { 
+            transform: translateY(2px); 
+            box-shadow: 0 6px 0 rgba(0,0,0,0.4); 
+        }
+        #spin-btn.spinning { 
+            background: linear-gradient(#f59e0b, #d97706); 
+        }
+        #line-controls, #bet-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .line-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .line-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
+        .control-btn {
+            height: 50px;
+            padding: 0 20px;
+            border-radius: 10px;
+            background: rgba(138, 43, 226, 0.8);
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+            border: 1px solid rgba(255,255,255,0.2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .control-btn:hover {
+            background: rgba(138, 43, 226, 1);
+            transform: translateY(-2px);
+        }
+        .control-btn:active {
+            transform: translateY(0);
+        }
+        #win-message { 
+            position: absolute; 
+            top: 20%; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            background: rgba(0,0,0,0.8); 
+            color: #ffd700; 
+            font-size: 42px; 
+            font-weight: bold; 
+            padding: 20px 40px; 
+            border-radius: 12px; 
+            z-index: 100; 
+            display: none; 
+            text-align: center; 
+            box-shadow: 0 0 30px rgba(255,215,0,0.5); 
+            text-shadow: 0 0 10px rgba(255,215,0,0.7); 
+            border: 2px solid #ffd700; 
+            animation: pulse 1.5s infinite; 
+        }
+        @keyframes pulse { 
+            0% { transform: translateX(-50%) scale(1); } 
+            50% { transform: translateX(-50%) scale(1.05); } 
+            100% { transform: translateX(-50%) scale(1); } 
+        }
+        #title { 
+            position: absolute; 
+            top: 20px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            color: white; 
+            font-size: 36px; 
+            font-weight: bold; 
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5); 
+            z-index: 10; 
+            background: rgba(0,0,0,0.3); 
+            padding: 10px 30px; 
+            border-radius: 10px; 
+            border: 1px solid rgba(255,255,255,0.1); 
+        }
+        #instructions { 
+            position: absolute; 
+            bottom: 140px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            color: rgba(255,255,255,0.7); 
+            font-size: 14px; 
+            text-align: center; 
+            z-index: 10; 
+            background: rgba(0,0,0,0.3); 
+            padding: 8px 16px; 
+            border-radius: 8px; 
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="game-root">
+            <div id="small-overlay">
+                <h2>Window Too Small</h2>
+                <p>Please resize your window to at least 900x700 pixels</p>
+            </div>
+            <div id="title">LUCKY SLOTS</div>
+            <div id="win-message"></div>
+            <div id="instructions">Press 'L' or click VIEW LINES to see active paylines!</div>
+            <div id="bottom-controls">
+                <div id="info-bar">
+                    <div class="info-item">
+                        <span class="info-label">Balance</span>
+                        <span class="highlight">$<span id="balance">1000.00</span></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Lines</span>
+                        <div id="line-controls">
+                            <div class="line-btn" id="line-down">◄</div>
+                            <span class="highlight" id="lines">20</span>
+                            <div class="line-btn" id="line-up">►</div>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Bet/Line</span>
+                        <div id="bet-controls">
+                            <div class="line-btn" id="bet-down">-</div>
+                            <span class="highlight">$<span id="bet-per-line">1.00</span></span>
+                            <div class="line-btn" id="bet-up">+</div>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Total Bet</span>
+                        <span class="highlight">$<span id="total-bet">20.00</span></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Last Win</span>
+                        <span class="highlight">$<span id="last-win">0.00</span></span>
+                    </div>
+                </div>
+                <div id="spin-btn">SPIN</div>
+                <div id="view-lines-btn" class="control-btn">VIEW LINES</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { Game } from './src/core/Game.js';
+        import { CONFIG } from './src/utils/Config.js';
+        
+        // Initialize game
+        const game = new Game();
+        
+        // Event listeners
+        document.getElementById('spin-btn').addEventListener('click', () => game.spin());
+        document.getElementById('line-up').addEventListener('click', () => game.changeLines(1));
+        document.getElementById('line-down').addEventListener('click', () => game.changeLines(-1));
+        document.getElementById('bet-up').addEventListener('click', () => game.changeBetPerLine(game.config.betStepPerLine));
+        document.getElementById('bet-down').addEventListener('click', () => game.changeBetPerLine(-game.config.betStepPerLine));
+        document.getElementById('view-lines-btn').addEventListener('click', () => game.togglePaylineOverlay());
+        
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if(e.code === 'Space'){
+                e.preventDefault();
+                game.spin();
+            } else if(e.code === 'ArrowUp'){
+                game.changeLines(1);
+            } else if(e.code === 'ArrowDown'){
+                game.changeLines(-1);
+            } else if(e.code === 'ArrowRight'){
+                game.changeBetPerLine(game.config.betStepPerLine);
+            } else if(e.code === 'ArrowLeft'){
+                game.changeBetPerLine(-game.config.betStepPerLine);
+            } else if(e.code === 'KeyL'){
+                game.togglePaylineOverlay();
+            }
+        });
+
+        // Responsive scaling
+        const minW = 900, minH = 700;
+        const overlay = document.getElementById('small-overlay');
+        
+        function resizeGame(){
+            const w = window.innerWidth, h = window.innerHeight;
+            
+            if(w < minW || h < minH){
+                overlay.style.display = 'flex';
+                if (game && game.app && game.app.view) {
+                    game.app.view.style.display = 'none';
+                }
+                return;
+            }
+            
+            overlay.style.display = 'none';
+            if (game && game.app && game.app.view) {
+                game.app.view.style.display = 'block';
+            }
+            
+            const scale = Math.min(w * 0.9 / CONFIG.width, h * 0.9 / CONFIG.height);
+            const newW = CONFIG.width * scale;
+            const newH = CONFIG.height * scale;
+            
+            game.app.renderer.resize(newW, newH);
+            game.app.stage.scale.set(scale);
+            game.resizeLayout();
+        }
+        
+        window.addEventListener('resize', resizeGame);
+        setTimeout(() => resizeGame(), 100);
+    </script>
+</body>
+</html>

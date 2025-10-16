@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Symbol Analyzer Test</title>
+    <style>
+        body {
+            font-family: Arial;
+            padding: 40px;
+            background: #1a1a2a;
+            color: white;
+        }
+        h1 { color: #4ade80; }
+        .result {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Symbol Analyzer Test</h1>
+    <p>Open Console (F12) to see results!</p>
+    <div id="output" class="result"></div>
+    
+    <script type="module">
+        import { SymbolAnalyzer } from './src/SymbolAnalyzer.js';
+        
+        console.log('🧪 Testing SymbolAnalyzer...');
+        
+        const testResults = [
+            ['🍒', '🍒', '💎'],
+            ['🍒', '🍋', '💎']
+        ];
+        
+        const result = SymbolAnalyzer.countSymbols(testResults);
+        
+        console.log('✅ Result:', result);
+        console.log('Expected: { "🍒": 3, "💎": 2, "🍋": 1 }');
+        
+        // Display on page
+        document.getElementById('output').innerHTML = `
+            <h2>Result:</h2>
+            <pre>${JSON.stringify(result, null, 2)}</pre>
+        `;
+    </script>
+</body>
+</html>
