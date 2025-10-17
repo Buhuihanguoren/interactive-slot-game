@@ -115,7 +115,3 @@ Rather than hardcoding 100 payline patterns, the system generates them algorithm
 - Add autoplay functionality
 - Implement save/load game state with localStorage
 - Add animation presets for different win sizes
-## Demo
-
-[Watch the demo](DEMO.mp4)
-
