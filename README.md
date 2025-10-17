@@ -2,12 +2,9 @@
 
 A fully functional slot machine game built with PixiJS, featuring mathematically generated paylines, weighted random symbol generation, and smooth animations.
 
-## Live Demo
+## Video Demo
 
-Clone and run locally with Python's built-in server:
-```bash
-python -m http.server
-```
+[![Watch the demo](thumbnail.png)](DEMO.mp4)
 
 ## Features
 
